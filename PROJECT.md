@@ -134,9 +134,12 @@ The following items are explicitly recorded as pending decisions or risks; they 
 
 ---
 
-## Current Status (Checkpoint 2.4 Complete)
+## Current Status (Phase 3 Complete — Checkpoint 3.4 Complete)
 
 - **Approved Stack:** React 19 + Vite + TypeScript (strict) + TanStack Query + Zustand + Tailwind CSS + shadcn/ui + Radix UI + Lucide + Supabase + Vercel.
 - **Approved Architecture:** Five-layer architecture with pure domain layer, isolated data access, and canonical models.
-- **Next Checkpoint:** Phase 3 / Checkpoint 3.1 — Application Scaffolding.
+- **Screen Map and User Journeys:** Formalized in `FEATURES.md` and `DESIGN.md` (Sections 1–5, 7–10).
+- **Visual Design System:** Formalized in `DESIGN.md` Section 6 — personality, color (amber primary, semantic tokens, life area accents), typography (Instrument Serif + Plus Jakarta Sans), spacing, shape/surface language, component language, motion, Soul Orb direction (Atmospheric Luminous Ember — recommended), Life Orbit and Life Map visual language, accessibility, anti-patterns.
+- **Design Review & Refinement:** Checkpoint 3.4 complete via Impeccable environment verification and design critique; `DESIGN.md` refined.
+- **Next Checkpoint:** Phase 4 / Checkpoint 4.1 — Application Scaffolding.
 - **Implementation State:** No application code written. No npm packages installed. No database migrations created.

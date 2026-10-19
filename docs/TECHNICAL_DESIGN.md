@@ -266,6 +266,32 @@ LifeArea
 Cross-domain relationships (e.g., a Task that affects both Academics and Skills) use a
 lightweight relationship model rather than separate duplicated entity types.
 
+### 4.2a FocusSession and Task Completion Are Independent — LOCKED
+
+**A completed FocusSession does NOT automatically complete its linked Task.**
+
+These are separate domain events with separate records and separate completion states.
+
+| Event | Record written | Domain effect |
+|---|---|---|
+| Focus session completed | `FocusSession` with `completed_at` timestamp | Time logged; effort recorded; may contribute to streak-qualifying activity |
+| Task marked complete | `Task` with `completed_at` timestamp | Task done; milestone progress recalculates; goal progress recalculates |
+
+**Valid user scenarios that must all be supported:**
+- Complete a task without ever starting a focus session
+- Run one or more focus sessions against a task and still leave the task incomplete
+- Run multiple focus sessions across several days before marking the task complete
+- Save a partial focus session (interrupted work) without completing the task
+- Postpone a task after a focus session — work is recorded, task remains open
+- Intentionally skip or pause a recurring routine — recorded as paused, not failed
+
+**Implementation constraints:**
+- The `FocusSession` completion mutation must NOT trigger a task-completion mutation
+- Task completion is always an explicit, separate user action
+- Domain logic that calculates goal or milestone progress must treat focus session records
+  as effort signals only — not as task-completion signals
+- A focus session record's presence does not imply its linked task is complete
+
 ### 4.3 Shared Task Model
 
 Academics assignments, Goal sub-tasks, Fitness sessions, and Skills practice sessions
