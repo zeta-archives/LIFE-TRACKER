@@ -10,11 +10,15 @@ import {
   Settings,
   User,
   Layers,
+  LogOut,
 } from 'lucide-react'
 import { NavGroup } from './NavGroup'
 import { NavItem } from './NavItem'
+import { useAuth } from '@/data'
 
 export function Sidebar() {
+  const auth = useAuth()
+
   return (
     <aside
       className="
@@ -72,11 +76,33 @@ export function Sidebar() {
 
       </nav>
 
-      {/* ── Bottom actions: Settings / Profile ── */}
-      <div className="px-2 pb-4 flex flex-col gap-0.5">
-        <div className="mx-1 mb-2 border-t border-border-subtle" />
+      {/* ── Bottom actions: Settings / Profile / Authenticated Session ── */}
+      <div className="px-2 pb-3 flex flex-col gap-1">
+        <div className="mx-1 mb-1 border-t border-border-subtle" />
         <NavItem to="/settings" icon={Settings} label="Settings" />
         <NavItem to="/profile" icon={User} label="Profile" />
+
+        {auth.user && (
+          <div className="mt-1.5 pt-2 border-t border-border-subtle/80 px-2 flex items-center justify-between gap-2">
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12px] font-medium text-text-primary truncate">
+                {auth.user.fullName || auth.user.email.split('@')[0]}
+              </span>
+              <span className="text-[11px] text-text-muted truncate">
+                {auth.user.email}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => auth.signOut()}
+              title="Sign out of Aether"
+              aria-label="Sign out"
+              className="p-1.5 rounded-md text-text-muted hover:text-status-danger hover:bg-status-danger/10 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   )

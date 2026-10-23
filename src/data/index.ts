@@ -8,4 +8,8 @@
  * 4. Supabase errors are normalized into typed application errors before leaving this layer.
  */
 
+export { supabase, isSupabaseConfigured } from './supabaseClient'
+export * from './auth'
+export * from './authContext'
+
 export const DATA_LAYER_STATUS = 'initialized' as const

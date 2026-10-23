@@ -236,9 +236,11 @@ Data Access depends on Domain (for types/models) but nothing in Domain imports D
 
 ### 4.1 One Source of Truth
 
-Life Tracker must have a single canonical domain model.
-Today, Calendar, Goals, Focus, Insights, Life Map, Life Sync, and AI must all consume
+Aether has a single canonical domain model.
+Today, Calendar, Goals, Focus, Insights, Life Map, Life Sync, and AI all consume
 the same underlying record types and the same shared business logic.
+
+For the detailed entity inventory, relationship definitions, cardinality, RLS constraints, and future entity boundaries, see the authoritative specification in `docs/CORE_DATA_MODEL.md` (established at Checkpoint 5.1).
 
 **Prohibited patterns:**
 - A separate task system for Academics disconnected from the main Task model
@@ -338,6 +340,16 @@ Do not scatter invalidation logic across unrelated components.
 - Supabase errors are normalized to typed `AppError` before crossing into the application
 - N+1 queries are prohibited — fetch coarsely and filter/select with domain logic
 - Auth state is accessed through a dedicated helper, not directly scattered across components
+
+### 6.1 Initial Schema & RLS Policy Baseline (Checkpoint 5.2)
+
+- **Migration File:** `supabase/migrations/20261023150000_core_schema.sql`
+- **Core Entities:** `profiles`, `life_areas`, `goals`, `milestones`, `tasks`, `routines`, `calendar_events`, `focus_sessions`, `progress_records`
+- **User Ownership:** All 9 tables carry foreign keys referencing `auth.users(id)`.
+- **Mandatory RLS:** Enabled on all 9 tables. Strict tenant isolation requires `auth.uid() = user_id`.
+- **Relational Ownership Checks:** Insert and update policies validate that foreign key references (`life_area_id`, `goal_id`, `milestone_id`, `task_id`) also belong to `auth.uid()`, preventing cross-user attachment attacks.
+- **Automatic User Onboarding:** Trigger `on_auth_user_created` on `auth.users` creates the initial `profile` and populates the 6 standard system default life areas upon user registration.
+
 
 ---
 

@@ -1,6 +1,7 @@
 import { createRouter } from '@tanstack/react-router'
 import { rootRoute } from './routes/root'
 import { indexRoute } from './routes/index'
+import { loginRoute, authRedirectRoute } from './routes/login'
 import { shellRoute, indexRedirectRoute } from './routes/shell'
 import { todayRoute } from './routes/today'
 import { calendarRoute } from './routes/calendar'
@@ -13,7 +14,7 @@ import { lifeMapRoute } from './routes/life-map'
 import { settingsRoute } from './routes/settings'
 import { profileRoute } from './routes/profile'
 
-// Shell subtree: all workspace routes rendered inside AppShell
+// Shell subtree: all protected workspace routes rendered inside AppShell
 const shellTree = shellRoute.addChildren([
   indexRedirectRoute,
   todayRoute,
@@ -28,12 +29,21 @@ const shellTree = shellRoute.addChildren([
   profileRoute,
 ])
 
-// Root tree: shell subtree + legacy index route (technical verification page)
-const routeTree = rootRoute.addChildren([shellTree, indexRoute])
+// Root tree: shell subtree + login route + auth redirect + legacy verification page
+const routeTree = rootRoute.addChildren([
+  shellTree,
+  loginRoute,
+  authRedirectRoute,
+  indexRoute,
+])
 
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
+  context: {
+    // Auth context will be supplied dynamically via RouterProvider in main.tsx
+    auth: undefined!,
+  },
 })
 
 // Register the router instance for type safety across the app

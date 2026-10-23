@@ -6,10 +6,10 @@
 Aether — intelligent personal life-management system for ambitious college students.
 
 ## Current Phase
-Phase 4 — Application Implementation
+Phase 5 — Core Data Model & Feature Implementation
 
 ## Current Checkpoint
-Checkpoint 4.4 — Deploy Initial Application Shell & Verified Foundation — COMPLETE (Phase 4 Exit)
+Checkpoint 5.3 — Authentication and User Ownership — COMPLETE
 
 ## Repository Status
 - Repository: LFTR
@@ -17,18 +17,24 @@ Checkpoint 4.4 — Deploy Initial Application Shell & Verified Foundation — CO
 - Phase 1 baseline established (documentation structure, Depth Spell governance).
 - Phase 2 complete: technology stack locked; Technical Design Specification formalized.
 - Phase 3 complete: screen map, user journeys, visual design system, and Impeccable review formalized.
-- Phase 4 complete (Checkpoints 4.1 – 4.4):
-  - **4.1 Scaffolding:** React 19 + Vite 6 + TypeScript (strict mode) + Tailwind CSS with semantic CSS variables, Instrument Serif + Plus Jakarta Sans fonts, TanStack Router baseline, domain and data layer boundaries.
-  - **4.2 Application Shell:** Product renamed to **Aether**; persistent desktop sidebar (`w-60`) strictly following `DESIGN.md §2.1` with Daily, Explore, Life Areas, Goals, Intelligence, and Settings/Profile; 10 workspace routes configured with authentic planned capabilities from `FEATURES.md`.
-  - **4.3 Component Foundation:** Shared accessible UI primitives in `src/components/ui/` (buttons with amber primary, form controls, dialogs with focus trapping, confirmation dialogs, dropdowns, alerts with distinct warning amber, badges, skeletons, empty states, page headers, dividers, tooltips); comprehensive verification showcase at `/verify`.
-  - **4.4 Deployment & Foundation Push:**
-    - `vercel.json` configured with Vite framework and client-side SPA rewrites (`/(.*)` -> `/index.html`) to ensure direct URL navigation and browser refresh work across all workspace routes.
-    - Verified live preview deployment created on Vercel: `https://express-maple-bzaoyci.tmp.now` (claim code available: `5a4d3c29-8cb2-4170-be46-5b79df011435`).
-    - Direct navigation and asset serving verified with HTTP 200 on `/`, `/today`, `/calendar`, `/verify`, plus JS/CSS bundles.
-    - Real browser verification executed via Microsoft Edge on desktop.
-    - Full quality checks verified: `typecheck` (0 errors), `lint` (0 errors, 0 warnings), `build` (2087 modules transformed, 3.37s).
-    - Verified entire application foundation staged and committed cleanly to GitHub `origin/main`.
-- No feature dashboards, databases, or business logic implemented yet.
+- Phase 4 complete (Checkpoints 4.1 – 4.4): application scaffolding, desktop application shell, UI components, initial deployment baseline, and foundation pushed to GitHub (`06cc6a7`).
+- Phase 5:
+  - **Checkpoint 5.1:** Core Data Model specification formalized in `docs/CORE_DATA_MODEL.md`.
+  - **Checkpoint 5.2:** Core schema migration (`supabase/migrations/20261023150000_core_schema.sql`) covering all 9 core entities, onboarding trigger `on_auth_user_created`, and strict RLS policies. Supabase client established in `src/data/supabaseClient.ts`.
+  - **Checkpoint 5.3 — COMPLETE (Authentication and User Ownership):**
+    - **Data-layer boundary contract enforced:** Implemented `src/data/auth.ts` and `src/data/authContext.tsx`. UI components never touch Supabase directly; all authentication methods (`signInWithPassword`, `signUpWithPassword`, `signOut`, `getInitialSession`, `onAuthStateChange`) and models (`AuthUser`, `Session`) are exported through `@/data`.
+    - **Session lifecycle & restoration:** Built-in session persistence with automatic token refresh. `AuthProvider` listens to Supabase auth transitions and safely unsubscribes on unmount. On initial boot and refresh, `AppContent` presents a luminous sanctuary loading state while checking persistent storage, completely preventing unauthenticated redirect flashes.
+    - **Route protection & navigation:**
+      - TanStack Router updated with typed router context (`rootRoute` with `createRootRouteWithContext<RouterContext>()`).
+      - Protected workspace routes (`shellRoute`) enforce session presence via `beforeLoad`, redirecting unauthenticated visitors to `/login?redirect=<target>`.
+      - Auth routes (`/login`, `/auth`) redirect already-authenticated users directly to `/today`.
+    - **Aether sanctuary auth interface:** Created `src/routes/login.tsx` matching `DESIGN.md` tokens (Instrument Serif display typography, Plus Jakarta Sans inputs, ambient ember radial glow, segmented Sign In / Create Account toggle, inline validation, and email confirmation feedback).
+    - **Identity & sign-out controls:** Integrated active user status and sign-out buttons in `src/components/layout/Sidebar.tsx` footer and `src/routes/profile.tsx`.
+    - **RLS security validation:** Validated RLS policies across all 9 tables (`profiles`, `life_areas`, `goals`, `milestones`, `tasks`, `routines`, `calendar_events`, `focus_sessions`, `progress_records`). All operations enforce `auth.uid() = user_id`, with relational foreign key checks on insert/update to prevent cross-tenant attachment.
+    - **Verification suite:** `typecheck` exit 0, `lint` exit 0, `build` exit 0 (2135 modules, 4.38s). Dev server verified running and serving application index cleanly.
+- Next Checkpoint: Checkpoint 5.4 — Life Areas Configuration & Seed Data Synchronization.
+
+
 
 
 
@@ -114,14 +120,17 @@ Formalized in `DESIGN.md` Section 6. Key decisions:
 ## Remaining Technical Risks
 
 1. **OneDrive repository location:** The repository is located inside `C:\Users\zetax\OneDrive\...`. Syncing `node_modules` causes severe I/O lag and potential lock errors. Must exclude `node_modules` from OneDrive sync or move repo before running `npm install`.
-2. **Exact database schema:** Complete PostgreSQL table schemas, foreign keys, and indexes are deferred to Checkpoint 2.5 / database design.
-3. **Calendar library selection:** Final choice of calendar component/timeline library deferred to the calendar feature implementation.
-4. **Life Map graph/layout implementation:** Specific layout algorithm (dagre, elk, manual) behind `@xyflow/react` abstraction deferred to Life Map implementation.
-5. **AI provider and model selection:** Vendor/model (Gemini, Claude, OpenAI) deferred to AI integration checkpoint; kept configurable behind server boundary.
-6. **Supabase Edge Functions vs. Vercel Serverless Functions:** Allocation of specific server-side operations between Supabase and Vercel functions evaluated per operation.
-7. **Exact routing implementation:** TanStack Router vs. alternative router to be confirmed during scaffolding.
-8. **Node/CI version strategy:** Target Node 22 LTS vs. Node 24 Current aligned across local and Vercel environments.
-9. **Performance and bundle optimization:** Dynamic imports and code-splitting for large visual modules (@xyflow/react, chart libraries) monitored as app scales.
+2. **`.env.local` credentials not yet populated:** File exists but contains placeholder values. The application cannot connect to Supabase until real `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are entered. See Manual Actions in Checkpoint 5.2 status.
+3. **Live database connectivity unverified:** Migration applied and tables confirmed by user. However, no application-level query has been made to the live database. End-to-end connectivity must be confirmed manually before 5.3 begins.
+4. **RLS enforcement and onboarding trigger untested:** The `on_auth_user_created` trigger and all RLS policies have not been exercised against the live database. Requires a test user signup after credentials are configured.
+5. **Supabase CLI not installed / project not linked:** No `supabase/config.toml` exists. Install the CLI and run `supabase link` if CLI-managed migrations are desired for future checkpoints.
+6. **Calendar library selection:** Final choice of calendar component/timeline library deferred to the calendar feature implementation.
+7. **Life Map graph/layout implementation:** Specific layout algorithm (dagre, elk, manual) behind `@xyflow/react` abstraction deferred to Life Map implementation.
+8. **AI provider and model selection:** Vendor/model (Gemini, Claude, OpenAI) deferred to AI integration checkpoint; kept configurable behind server boundary.
+9. **Supabase Edge Functions vs. Vercel Serverless Functions:** Allocation of specific server-side operations between Supabase and Vercel functions evaluated per operation.
+10. **Exact routing implementation:** TanStack Router vs. alternative router to be confirmed during scaffolding.
+11. **Node/CI version strategy:** Target Node 22 LTS vs. Node 24 Current aligned across local and Vercel environments.
+12. **Performance and bundle optimization:** Dynamic imports and code-splitting for large visual modules (@xyflow/react, chart libraries) monitored as app scales.
 
 ---
 
@@ -140,14 +149,19 @@ Formalized in `DESIGN.md` Section 6. Key decisions:
 
 ## Next Roadmap Checkpoint
  
-**Checkpoint 4.5 — Today Workspace (Initial Feature Implementation)**
+**Checkpoint 5.3 — Today Workspace Implementation & Data Access Integration**
 
-With the application shell navigable and shared component foundation established, proceed to:
+**Prerequisites before starting 5.3:**
+1. Populate `.env.local` with real credentials from the Aether Soul Supabase project dashboard (Settings → API → `anon`/`public` key only — never the service-role key).
+2. Run `npm run dev` and confirm in the browser dev console that the Supabase connection warning does not appear and no network errors are present.
+3. Optionally: create a test user via Supabase Dashboard → Authentication → Add User to verify the onboarding trigger fires correctly (profile + 6 default life areas created).
+
+With prerequisites satisfied and core data model specified in `docs/CORE_DATA_MODEL.md` and UI primitives ready in `src/components/ui/`, proceed to:
 - Implement the Today workspace as the first real feature workspace.
-- Consume the shared UI primitives from `src/components/ui/` (buttons, forms, dialogs, badges, empty states).
-- Establish initial Task and Schedule data models in `src/domain/`.
-- Establish Supabase connection and data access layer setup in `src/data/`.
-- Configure TanStack Query for data fetching/caching; Zustand for transient draft state.
+- Establish initial pure TypeScript domain types in `src/domain/task.ts` and `src/domain/schedule.ts`.
+- Connect Supabase client and data-access repositories in `src/data/`.
+- Configure TanStack Query for server state caching and Zustand for local draft interactions.
 - No other workspaces should be implemented ahead of Today.
-- **Remember:** No Supabase migrations or schema changes until the Today workspace data model is defined.
+- **Remember:** No Supabase schema changes or migrations until the Today workspace data model is validated in pure TypeScript domain logic.
+
 
