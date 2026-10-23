@@ -11,13 +11,49 @@ import {
   User,
   Layers,
   LogOut,
+  GraduationCap,
+  Activity,
+  Briefcase,
+  Moon,
+  Users,
+  Smile,
+  Sparkles,
+  BookOpen,
+  Heart,
+  Palette,
+  Compass,
+  Code,
+  Dumbbell,
+  Music,
+  Globe,
+  type LucideIcon,
 } from 'lucide-react'
 import { NavGroup } from './NavGroup'
 import { NavItem } from './NavItem'
-import { useAuth } from '@/data'
+import { useAuth, useLifeAreas } from '@/data'
+
+const iconMap: Record<string, LucideIcon> = {
+  GraduationCap,
+  Activity,
+  Briefcase,
+  Moon,
+  Users,
+  Smile,
+  Layers,
+  Sparkles,
+  BookOpen,
+  Heart,
+  Palette,
+  Compass,
+  Code,
+  Dumbbell,
+  Music,
+  Globe,
+}
 
 export function Sidebar() {
   const auth = useAuth()
+  const { lifeAreas, isLoading: lifeAreasLoading } = useLifeAreas()
 
   return (
     <aside
@@ -53,12 +89,42 @@ export function Sidebar() {
           <NavItem to="/life-orbit" icon={Orbit} label="Life Orbit" />
         </NavGroup>
 
-        {/* Life Areas — placeholder; populated with configured areas at feature implementation */}
+        {/* Life Areas — dynamically bound to persistent Supabase records */}
         <NavGroup label="Life Areas">
-          <div className="px-3 py-1.5 flex items-center gap-2 text-[12px] font-sans text-text-muted/50 select-none">
-            <Layers className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            <span>No areas configured yet</span>
-          </div>
+          {lifeAreasLoading ? (
+            <div className="px-3 py-1.5 flex items-center gap-2 text-[12px] font-sans text-text-muted/60 select-none animate-pulse">
+              <Layers className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Loading areas...</span>
+            </div>
+          ) : lifeAreas.length === 0 ? (
+            <div className="px-3 py-1.5 flex items-center gap-2 text-[12px] font-sans text-text-muted/50 select-none">
+              <Layers className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+              <span>No areas configured yet</span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {lifeAreas.map((area) => {
+                const IconComponent = iconMap[area.iconName] || Layers
+                return (
+                  <div
+                    key={area.id}
+                    className="px-3 py-1.5 flex items-center gap-2.5 text-[12.5px] font-sans text-text-secondary hover:text-text-primary hover:bg-white/[0.04] rounded-md transition-colors select-none"
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm"
+                      style={{ backgroundColor: area.accentColor }}
+                      aria-hidden="true"
+                    />
+                    <IconComponent
+                      className="w-3.5 h-3.5 flex-shrink-0 opacity-70"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{area.name}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </NavGroup>
 
         {/* Goals */}

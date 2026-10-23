@@ -11,5 +11,7 @@
 export { supabase, isSupabaseConfigured } from './supabaseClient'
 export * from './auth'
 export * from './authContext'
+export * from './lifeAreas'
+export * from './lifeAreasContext'
 
 export const DATA_LAYER_STATUS = 'initialized' as const
