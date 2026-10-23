@@ -3,25 +3,9 @@ import * as React from 'react'
 import { createRoute } from '@tanstack/react-router'
 import {
   Settings,
-  Plus,
   Pencil,
   Trash2,
   Layers,
-  GraduationCap,
-  Activity,
-  Briefcase,
-  Moon,
-  Users,
-  Smile,
-  Sparkles,
-  BookOpen,
-  Heart,
-  Palette,
-  Compass,
-  Code,
-  Dumbbell,
-  Music,
-  Globe,
   RefreshCw,
   type LucideIcon,
 } from 'lucide-react'
@@ -41,40 +25,11 @@ import {
   DialogCloseButton,
   ConfirmationDialog,
   Skeleton,
-  Tooltip,
 } from '@/components/ui'
-
-const ICON_OPTIONS: { name: string; icon: LucideIcon; label: string }[] = [
-  { name: 'GraduationCap', icon: GraduationCap, label: 'Academic' },
-  { name: 'Activity', icon: Activity, label: 'Health' },
-  { name: 'Briefcase', icon: Briefcase, label: 'Career' },
-  { name: 'Moon', icon: Moon, label: 'Rest' },
-  { name: 'Users', icon: Users, label: 'Social' },
-  { name: 'Smile', icon: Smile, label: 'Personal' },
-  { name: 'Sparkles', icon: Sparkles, label: 'Inspiration' },
-  { name: 'BookOpen', icon: BookOpen, label: 'Reading' },
-  { name: 'Heart', icon: Heart, label: 'Wellness' },
-  { name: 'Palette', icon: Palette, label: 'Creative' },
-  { name: 'Compass', icon: Compass, label: 'Life Vision' },
-  { name: 'Code', icon: Code, label: 'Technical' },
-  { name: 'Dumbbell', icon: Dumbbell, label: 'Fitness' },
-  { name: 'Music', icon: Music, label: 'Arts' },
-  { name: 'Globe', icon: Globe, label: 'Exploration' },
-  { name: 'Layers', icon: Layers, label: 'General' },
-]
-
-const COLOR_OPTIONS = [
-  { hex: '#4A90E2', label: 'Blue' },
-  { hex: '#4EAC7A', label: 'Green' },
-  { hex: '#9B51E0', label: 'Purple' },
-  { hex: '#5C6BC0', label: 'Indigo' },
-  { hex: '#E05675', label: 'Rose' },
-  { hex: '#26A69A', label: 'Teal' },
-  { hex: '#D97706', label: 'Amber' },
-  { hex: '#EC4899', label: 'Pink' },
-  { hex: '#06B6D4', label: 'Cyan' },
-  { hex: '#F97316', label: 'Orange' },
-]
+import {
+  COLOR_OPTIONS,
+  ICON_OPTIONS,
+} from '@/components/life-areas/CreateLifeAreaDialog'
 
 const iconMap: Record<string, LucideIcon> = Object.fromEntries(
   ICON_OPTIONS.map((item) => [item.name, item.icon]),
@@ -86,22 +41,12 @@ export function SettingsPage() {
     isLoading,
     error: loadError,
     refetch,
-    createArea,
     updateArea,
     deleteArea,
   } = useLifeAreas()
 
-  const [createDialogOpen, setCreateDialogOpen] = React.useState(false)
   const [editingArea, setEditingArea] = React.useState<LifeArea | null>(null)
   const [areaToDelete, setAreaToDelete] = React.useState<LifeArea | null>(null)
-
-  // Create form state
-  const [newName, setNewName] = React.useState('')
-  const [newColor, setNewColor] = React.useState(COLOR_OPTIONS[6].hex) // Amber
-  const [newIcon, setNewIcon] = React.useState('Layers')
-  const [newPriority, setNewPriority] = React.useState(5)
-  const [createSubmitting, setCreateSubmitting] = React.useState(false)
-  const [createError, setCreateError] = React.useState<string | null>(null)
 
   // Edit form state
   const [editName, setEditName] = React.useState('')
@@ -111,8 +56,9 @@ export function SettingsPage() {
   const [editSubmitting, setEditSubmitting] = React.useState(false)
   const [editError, setEditError] = React.useState<string | null>(null)
 
-  // Success message
+  // Feedback banner
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
+  const [actionError, setActionError] = React.useState<string | null>(null)
 
   const handleOpenEdit = (area: LifeArea) => {
     setEditingArea(area)
@@ -121,32 +67,6 @@ export function SettingsPage() {
     setEditIcon(area.iconName)
     setEditPriority(area.priorityWeight)
     setEditError(null)
-  }
-
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setCreateError(null)
-    setCreateSubmitting(true)
-
-    const res = await createArea({
-      name: newName,
-      accentColor: newColor,
-      iconName: newIcon,
-      priorityWeight: newPriority,
-    })
-
-    setCreateSubmitting(false)
-
-    if (!res.success) {
-      setCreateError(res.error || 'Failed to create life area.')
-    } else {
-      setSuccessMessage(`Life area "${newName}" successfully created and saved to database.`)
-      setNewName('')
-      setNewColor(COLOR_OPTIONS[6].hex)
-      setNewIcon('Layers')
-      setNewPriority(5)
-      setCreateDialogOpen(false)
-    }
   }
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -181,7 +101,7 @@ export function SettingsPage() {
     setAreaToDelete(null)
 
     if (!res.success) {
-      setCreateError(res.error || 'Failed to delete life area.')
+      setActionError(res.error || 'Failed to delete life area.')
     } else {
       setSuccessMessage(`Life area "${name}" deleted from database.`)
     }
@@ -227,6 +147,15 @@ export function SettingsPage() {
         </Alert>
       )}
 
+      {actionError && (
+        <Alert
+          variant="danger"
+          onDismiss={() => setActionError(null)}
+        >
+          {actionError}
+        </Alert>
+      )}
+
       {loadError && (
         <Alert variant="danger" title="Error Synchronizing Records">
           {loadError}
@@ -237,22 +166,9 @@ export function SettingsPage() {
       <section className="p-6 rounded-xl bg-bg-elevated/70 border border-border flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-text-primary tracking-tight">
-                Life Areas
-              </h2>
-              <Tooltip content="Add life area">
-                <Button
-                  variant="subtle"
-                  size="icon-sm"
-                  onClick={() => setCreateDialogOpen(true)}
-                  aria-label="Add life area"
-                  className="h-6 w-6 rounded-md text-accent hover:text-accent-hover hover:bg-accent-subtle/80"
-                >
-                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                </Button>
-              </Tooltip>
-            </div>
+            <h2 className="text-sm font-semibold text-text-primary tracking-tight">
+              Life Areas
+            </h2>
             <p className="text-[12px] text-text-secondary mt-0.5">
               Configured domains stored in your Supabase backend. Order is prioritized by weight.
             </p>
@@ -268,7 +184,7 @@ export function SettingsPage() {
           </div>
         ) : lifeAreas.length === 0 ? (
           <div className="p-8 text-center border border-dashed border-border rounded-lg text-text-muted text-sm">
-            No life areas configured. Click &ldquo;+&rdquo; above to add one.
+            No life areas configured. Click &ldquo;+&rdquo; beside Life Areas in the sidebar to add one.
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -335,106 +251,6 @@ export function SettingsPage() {
         )}
       </section>
 
-      {/* ── Dialog: Create Life Area ── */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogCloseButton onClose={() => setCreateDialogOpen(false)} />
-        <form onSubmit={handleCreateSubmit}>
-          <DialogHeader>
-            <DialogTitle>Add New Life Area</DialogTitle>
-            <DialogDescription>
-              Create a custom life domain. This record will be persisted directly to your Supabase tenant.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4 flex flex-col gap-4">
-            {createError && (
-              <Alert variant="danger">{createError}</Alert>
-            )}
-
-            <FormField id="new-area-name" label="Domain Name" required>
-              <Input
-                placeholder="e.g. Research &amp; Publications"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                required
-                disabled={createSubmitting}
-                autoFocus
-              />
-            </FormField>
-
-            <FormField id="new-area-priority" label="Priority Weight (1–10)" helperText="1 is highest priority in schedules">
-              <Input
-                type="number"
-                min={1}
-                max={10}
-                value={newPriority}
-                onChange={(e) => setNewPriority(parseInt(e.target.value, 10) || 5)}
-                disabled={createSubmitting}
-              />
-            </FormField>
-
-            {/* Color Swatches */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium text-text-secondary">Accent Color</label>
-              <div className="flex flex-wrap gap-2">
-                {COLOR_OPTIONS.map((c) => (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => setNewColor(c.hex)}
-                    className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                      newColor === c.hex ? 'border-accent scale-110 shadow-md' : 'border-transparent hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                    title={c.label}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Icon Selection */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium text-text-secondary">Icon</label>
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-36 overflow-y-auto p-1 border border-border-subtle rounded-md bg-bg-base/40">
-                {ICON_OPTIONS.map((opt) => {
-                  const Icon = opt.icon
-                  const selected = newIcon === opt.name
-                  return (
-                    <button
-                      key={opt.name}
-                      type="button"
-                      onClick={() => setNewIcon(opt.name)}
-                      className={`p-2 rounded flex flex-col items-center gap-1 text-[10px] transition-colors ${
-                        selected
-                          ? 'bg-accent/20 border border-accent text-accent font-medium'
-                          : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04]'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span className="truncate max-w-[45px]">{opt.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCreateDialogOpen(false)}
-              disabled={createSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" loading={createSubmitting}>
-              Create &amp; Save
-            </Button>
-          </DialogFooter>
-        </form>
-      </Dialog>
-
       {/* ── Dialog: Edit Life Area ── */}
       <Dialog open={Boolean(editingArea)} onOpenChange={(open) => !open && setEditingArea(null)}>
         <DialogCloseButton onClose={() => setEditingArea(null)} />
@@ -446,7 +262,7 @@ export function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 flex flex-col gap-4">
+          <div className="py-4 flex flex-col gap-4 font-sans">
             {editError && (
               <Alert variant="danger">{editError}</Alert>
             )}
