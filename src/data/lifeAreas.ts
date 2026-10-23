@@ -75,6 +75,46 @@ function generateSlug(name: string): string {
 }
 
 /**
+ * Standard system default life areas per DESIGN.md §2.1 and core migration.
+ */
+export const DEFAULT_LIFE_AREAS = [
+  { name: 'Academics', slug: 'academics', accentColor: '#4A90E2', iconName: 'GraduationCap', priorityWeight: 1 },
+  { name: 'Health & Fitness', slug: 'health', accentColor: '#4EAC7A', iconName: 'Activity', priorityWeight: 2 },
+  { name: 'Skills & Career', slug: 'skills', accentColor: '#9B51E0', iconName: 'Briefcase', priorityWeight: 3 },
+  { name: 'Sleep & Recovery', slug: 'sleep', accentColor: '#5C6BC0', iconName: 'Moon', priorityWeight: 4 },
+  { name: 'Relationships', slug: 'relationships', accentColor: '#E05675', iconName: 'Users', priorityWeight: 5 },
+  { name: 'Personal', slug: 'personal', accentColor: '#26A69A', iconName: 'Smile', priorityWeight: 6 },
+] as const
+
+/**
+ * Ensures system default life areas exist for the given user without duplicates.
+ */
+export async function ensureDefaultLifeAreas(userId: string): Promise<void> {
+  if (!isSupabaseConfigured || !userId) return
+
+  const { data, error } = await supabase
+    .from('life_areas')
+    .select('id')
+    .limit(1)
+
+  if (error || (data && data.length > 0)) {
+    return
+  }
+
+  const rows = DEFAULT_LIFE_AREAS.map((def) => ({
+    user_id: userId,
+    name: def.name,
+    slug: def.slug,
+    accent_color: def.accentColor,
+    icon_name: def.iconName,
+    priority_weight: def.priorityWeight,
+    is_system_default: true,
+  }))
+
+  await supabase.from('life_areas').insert(rows)
+}
+
+/**
  * Fetch all active (non-archived) life areas for the current authenticated user.
  */
 export async function fetchLifeAreas(): Promise<{
@@ -94,6 +134,34 @@ export async function fetchLifeAreas(): Promise<{
     .is('archived_at', null)
     .order('priority_weight', { ascending: true })
     .order('created_at', { ascending: true })
+
+  if (error) {
+    return { data: [], error: new Error(error.message) }
+  }
+
+  const mapped = (data as LifeAreaRow[]).map(mapRowToLifeArea)
+  return { data: mapped, error: null }
+}
+
+/**
+ * Fetch all archived life areas for the current authenticated user.
+ */
+export async function fetchArchivedLifeAreas(): Promise<{
+  data: LifeArea[]
+  error: Error | null
+}> {
+  if (!isSupabaseConfigured) {
+    return {
+      data: [],
+      error: new Error('Supabase credentials not configured.'),
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('life_areas')
+    .select('*')
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false })
 
   if (error) {
     return { data: [], error: new Error(error.message) }
@@ -251,6 +319,30 @@ export async function updateLifeArea(
   }
 
   return { data: mapRowToLifeArea(data as LifeAreaRow), error: null }
+}
+
+/**
+ * Archive a life area (soft-deactivation; preserves all associated history, tasks, and goals).
+ */
+export async function archiveLifeArea(
+  id: string,
+): Promise<{ data: LifeArea | null; error: Error | null }> {
+  return updateLifeArea({
+    id,
+    archivedAt: new Date().toISOString(),
+  })
+}
+
+/**
+ * Restore an archived life area back to active state.
+ */
+export async function restoreLifeArea(
+  id: string,
+): Promise<{ data: LifeArea | null; error: Error | null }> {
+  return updateLifeArea({
+    id,
+    archivedAt: null,
+  })
 }
 
 /**

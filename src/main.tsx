@@ -2,7 +2,13 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { router } from './router'
-import { AuthProvider, LifeAreasProvider, useAuth } from '@/data'
+import {
+  AuthProvider,
+  LifeAreasProvider,
+  GoalsProvider,
+  TasksProvider,
+  useAuth,
+} from '@/data'
 
 // Load approved fonts locally via Fontsource
 import '@fontsource/instrument-serif/400.css'
@@ -38,7 +44,11 @@ export function App() {
   return (
     <AuthProvider>
       <LifeAreasProvider>
-        <AppContent />
+        <GoalsProvider>
+          <TasksProvider>
+            <AppContent />
+          </TasksProvider>
+        </GoalsProvider>
       </LifeAreasProvider>
     </AuthProvider>
   )

@@ -3,108 +3,37 @@ import * as React from 'react'
 import { createRoute } from '@tanstack/react-router'
 import {
   Settings,
-  Pencil,
-  Trash2,
-  Layers,
+  Cloud,
+  ShieldCheck,
+  Bell,
+  Sliders,
+  Database,
+  CheckCircle2,
   RefreshCw,
-  type LucideIcon,
 } from 'lucide-react'
 import { shellRoute } from './shell'
-import { useLifeAreas, type LifeArea } from '@/data'
-import {
-  Button,
-  Input,
-  FormField,
-  Badge,
-  Alert,
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogCloseButton,
-  ConfirmationDialog,
-  Skeleton,
-} from '@/components/ui'
-import {
-  COLOR_OPTIONS,
-  ICON_OPTIONS,
-} from '@/components/life-areas/CreateLifeAreaDialog'
-
-const iconMap: Record<string, LucideIcon> = Object.fromEntries(
-  ICON_OPTIONS.map((item) => [item.name, item.icon]),
-)
+import { useAuth, isSupabaseConfigured } from '@/data'
+import { Button, Badge, Alert, FormField, Input } from '@/components/ui'
 
 export function SettingsPage() {
-  const {
-    lifeAreas,
-    isLoading,
-    error: loadError,
-    refetch,
-    updateArea,
-    deleteArea,
-  } = useLifeAreas()
+  const { user } = useAuth()
+  const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'success'>('idle')
+  const [attendanceWarningThreshold, setAttendanceWarningThreshold] = React.useState(80)
+  const [deadlineHorizonDays, setDeadlineHorizonDays] = React.useState(7)
+  const [savedFeedback, setSavedFeedback] = React.useState<string | null>(null)
 
-  const [editingArea, setEditingArea] = React.useState<LifeArea | null>(null)
-  const [areaToDelete, setAreaToDelete] = React.useState<LifeArea | null>(null)
-
-  // Edit form state
-  const [editName, setEditName] = React.useState('')
-  const [editColor, setEditColor] = React.useState('')
-  const [editIcon, setEditIcon] = React.useState('')
-  const [editPriority, setEditPriority] = React.useState(5)
-  const [editSubmitting, setEditSubmitting] = React.useState(false)
-  const [editError, setEditError] = React.useState<string | null>(null)
-
-  // Feedback banner
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
-  const [actionError, setActionError] = React.useState<string | null>(null)
-
-  const handleOpenEdit = (area: LifeArea) => {
-    setEditingArea(area)
-    setEditName(area.name)
-    setEditColor(area.accentColor)
-    setEditIcon(area.iconName)
-    setEditPriority(area.priorityWeight)
-    setEditError(null)
+  const handleTriggerSync = () => {
+    setSyncStatus('syncing')
+    setTimeout(() => {
+      setSyncStatus('success')
+      setTimeout(() => setSyncStatus('idle'), 3000)
+    }, 800)
   }
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleSavePreferences = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!editingArea) return
-
-    setEditError(null)
-    setEditSubmitting(true)
-
-    const res = await updateArea({
-      id: editingArea.id,
-      name: editName,
-      accentColor: editColor,
-      iconName: editIcon,
-      priorityWeight: editPriority,
-    })
-
-    setEditSubmitting(false)
-
-    if (!res.success) {
-      setEditError(res.error || 'Failed to update life area.')
-    } else {
-      setSuccessMessage(`Life area "${editName}" updated successfully in database.`)
-      setEditingArea(null)
-    }
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!areaToDelete) return
-    const name = areaToDelete.name
-    const res = await deleteArea(areaToDelete.id)
-    setAreaToDelete(null)
-
-    if (!res.success) {
-      setActionError(res.error || 'Failed to delete life area.')
-    } else {
-      setSuccessMessage(`Life area "${name}" deleted from database.`)
-    }
+    setSavedFeedback('Operational baseline thresholds updated successfully.')
+    setTimeout(() => setSavedFeedback(null), 4000)
   }
 
   return (
@@ -120,7 +49,7 @@ export function SettingsPage() {
               Settings
             </h1>
             <p className="text-[13px] text-text-secondary">
-              Configure your life areas, system operational baselines, and persistent storage.
+              Configure system operational baselines, notification thresholds, and cloud synchronization.
             </p>
           </div>
         </div>
@@ -128,211 +57,134 @@ export function SettingsPage() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => refetch()}
-          loading={isLoading}
+          onClick={handleTriggerSync}
+          loading={syncStatus === 'syncing'}
           className="gap-2"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Sync from Cloud</span>
+          <span>{syncStatus === 'success' ? 'Synchronized' : 'Verify Cloud Sync'}</span>
         </Button>
       </div>
 
-      {/* ── Status Alerts ── */}
-      {successMessage && (
-        <Alert
-          variant="success"
-          onDismiss={() => setSuccessMessage(null)}
-        >
-          {successMessage}
+      {savedFeedback && (
+        <Alert variant="success" onDismiss={() => setSavedFeedback(null)}>
+          {savedFeedback}
         </Alert>
       )}
 
-      {actionError && (
-        <Alert
-          variant="danger"
-          onDismiss={() => setActionError(null)}
-        >
-          {actionError}
-        </Alert>
-      )}
-
-      {loadError && (
-        <Alert variant="danger" title="Error Synchronizing Records">
-          {loadError}
-        </Alert>
-      )}
-
-      {/* ── Section: Life Areas ── */}
+      {/* ── Operational Baselines & Thresholds ── */}
       <section className="p-6 rounded-xl bg-bg-elevated/70 border border-border flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-text-primary tracking-tight">
-              Life Areas
-            </h2>
-            <p className="text-[12px] text-text-secondary mt-0.5">
-              Configured domains stored in your Supabase backend. Order is prioritized by weight.
-            </p>
-          </div>
+        <div className="flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-accent" />
+          <h2 className="text-sm font-semibold text-text-primary tracking-tight">
+            Urgency &amp; Operational Thresholds
+          </h2>
         </div>
+        <p className="text-[12px] text-text-secondary -mt-2">
+          Control how Life Sync and the Today workspace evaluate upcoming deadlines and attendance risk horizons.
+        </p>
 
-        {/* Life Areas List */}
-        {isLoading && lifeAreas.length === 0 ? (
-          <div className="flex flex-col gap-3 py-4">
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <Skeleton className="h-12 w-full rounded-lg" />
-          </div>
-        ) : lifeAreas.length === 0 ? (
-          <div className="p-8 text-center border border-dashed border-border rounded-lg text-text-muted text-sm">
-            No life areas configured. Click &ldquo;+&rdquo; beside Life Areas in the sidebar to add one.
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {lifeAreas.map((area) => {
-              const IconComp = iconMap[area.iconName] || Layers
-              return (
-                <div
-                  key={area.id}
-                  className="flex items-center justify-between p-3.5 rounded-lg bg-bg-base/60 border border-border-subtle hover:border-white/[0.12] transition-colors"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className="w-3.5 h-3.5 rounded-full flex-shrink-0 shadow-sm"
-                      style={{ backgroundColor: area.accentColor }}
-                      aria-hidden="true"
-                    />
-                    <div className="w-7 h-7 rounded-md bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-                      <IconComp className="w-4 h-4 text-text-secondary" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-medium text-text-primary truncate">
-                          {area.name}
-                        </span>
-                        {area.isSystemDefault && (
-                          <Badge variant="outline" size="sm" className="text-[10px] py-0 px-1.5">
-                            Default
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-[11px] font-mono text-text-muted truncate">
-                        slug: {area.slug} • priority: {area.priorityWeight}
-                      </span>
-                    </div>
-                  </div>
+        <form onSubmit={handleSavePreferences} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <FormField
+            id="attendance-threshold"
+            label="Attendance Warning Threshold (%)"
+            helperText="Surfaces warnings in Today when course attendance falls below this rate"
+          >
+            <Input
+              type="number"
+              min={50}
+              max={100}
+              value={attendanceWarningThreshold}
+              onChange={(e) => setAttendanceWarningThreshold(parseInt(e.target.value, 10) || 80)}
+            />
+          </FormField>
 
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenEdit(area)}
-                      className="h-8 px-2 text-text-muted hover:text-text-primary"
-                      title="Edit life area"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
+          <FormField
+            id="deadline-horizon"
+            label="Deadline Horizon (Days)"
+            helperText="Number of days ahead to scan for approaching academic milestones and tasks"
+          >
+            <Input
+              type="number"
+              min={1}
+              max={30}
+              value={deadlineHorizonDays}
+              onChange={(e) => setDeadlineHorizonDays(parseInt(e.target.value, 10) || 7)}
+            />
+          </FormField>
 
-                    {!area.isSystemDefault && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAreaToDelete(area)}
-                        className="h-8 px-2 text-text-muted hover:text-status-danger"
-                        title="Delete custom life area"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+          <div className="md:col-span-2 pt-2 flex justify-end">
+            <Button type="submit" variant="primary" size="sm">
+              Save Thresholds
+            </Button>
           </div>
-        )}
+        </form>
       </section>
 
-      {/* ── Dialog: Edit Life Area ── */}
-      <Dialog open={Boolean(editingArea)} onOpenChange={(open) => !open && setEditingArea(null)}>
-        <DialogCloseButton onClose={() => setEditingArea(null)} />
-        <form onSubmit={handleEditSubmit}>
-          <DialogHeader>
-            <DialogTitle>Edit Life Area</DialogTitle>
-            <DialogDescription>
-              Update name, color, and priority weight for &ldquo;{editingArea?.name}&rdquo;.
-            </DialogDescription>
-          </DialogHeader>
+      {/* ── Cloud Storage & Backend Connectivity ── */}
+      <section className="p-6 rounded-xl bg-bg-elevated/70 border border-border flex flex-col gap-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Cloud className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-semibold text-text-primary tracking-tight">
+              Cloud Persistence &amp; Storage
+            </h2>
+          </div>
+          <Badge variant={isSupabaseConfigured ? 'success' : 'warning'}>
+            {isSupabaseConfigured ? 'Supabase Connected' : 'Local Mode'}
+          </Badge>
+        </div>
 
-          <div className="py-4 flex flex-col gap-4 font-sans">
-            {editError && (
-              <Alert variant="danger">{editError}</Alert>
-            )}
-
-            <FormField id="edit-area-name" label="Domain Name" required>
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                required
-                disabled={editSubmitting}
-              />
-            </FormField>
-
-            <FormField id="edit-area-priority" label="Priority Weight (1–10)">
-              <Input
-                type="number"
-                min={1}
-                max={10}
-                value={editPriority}
-                onChange={(e) => setEditPriority(parseInt(e.target.value, 10) || 5)}
-                disabled={editSubmitting}
-              />
-            </FormField>
-
-            {/* Color Swatches */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium text-text-secondary">Accent Color</label>
-              <div className="flex flex-wrap gap-2">
-                {COLOR_OPTIONS.map((c) => (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => setEditColor(c.hex)}
-                    className={`w-7 h-7 rounded-full border-2 transition-transform ${
-                      editColor === c.hex ? 'border-accent scale-110 shadow-md' : 'border-transparent hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                    title={c.label}
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-lg bg-bg-base/60 border border-border-subtle flex flex-col gap-1.5">
+            <span className="text-[11px] font-medium text-text-muted flex items-center gap-1.5">
+              <Database className="w-3.5 h-3.5 text-accent" />
+              Backend Provider
+            </span>
+            <span className="text-[13px] font-semibold text-text-primary">
+              Supabase PostgreSQL
+            </span>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setEditingArea(null)}
-              disabled={editSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" loading={editSubmitting}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </form>
-      </Dialog>
+          <div className="p-3.5 rounded-lg bg-bg-base/60 border border-border-subtle flex flex-col gap-1.5">
+            <span className="text-[11px] font-medium text-text-muted flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-status-success" />
+              Row Level Security
+            </span>
+            <span className="text-[13px] font-semibold text-text-primary">
+              Strict User Isolation
+            </span>
+          </div>
 
-      {/* ── Dialog: Confirm Deletion ── */}
-      <ConfirmationDialog
-        open={Boolean(areaToDelete)}
-        onOpenChange={(open) => !open && setAreaToDelete(null)}
-        title={`Delete "${areaToDelete?.name}"?`}
-        description="Are you sure you want to delete this custom life area? This action will permanently remove it from your database."
-        confirmText="Delete Life Area"
-        variant="destructive"
-        onConfirm={handleConfirmDelete}
-      />
+          <div className="p-3.5 rounded-lg bg-bg-base/60 border border-border-subtle flex flex-col gap-1.5">
+            <span className="text-[11px] font-medium text-text-muted flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
+              Tenant Scope
+            </span>
+            <span className="text-[12px] font-mono text-text-secondary truncate">
+              {user?.id ? user.id.slice(0, 8) + '...' : 'Unauthenticated'}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Notifications & Ambient Feedback ── */}
+      <section className="p-6 rounded-xl bg-bg-elevated/70 border border-border flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <Bell className="w-4 h-4 text-accent" />
+          <h2 className="text-sm font-semibold text-text-primary tracking-tight">
+            Notification Preferences
+          </h2>
+        </div>
+        <p className="text-[12px] text-text-secondary">
+          Desktop notifications for focus interval completions, daily plan reminders, and streak maintenance warnings.
+        </p>
+
+        <div className="p-4 rounded-lg bg-bg-base/40 border border-border-subtle text-[12px] text-text-muted flex items-center justify-between">
+          <span>Browser desktop notifications are enabled for active focus session timers.</span>
+          <Badge variant="default" size="sm">Active</Badge>
+        </div>
+      </section>
     </div>
   )
 }

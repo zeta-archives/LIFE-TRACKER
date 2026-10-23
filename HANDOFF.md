@@ -6,10 +6,10 @@
 Aether — intelligent personal life-management system for ambitious college students.
 
 ## Current Phase
-Phase 5 — Core Data Model & Feature Implementation
+Phase 6 — Feature Implementation
 
 ## Current Checkpoint
-Checkpoint 5.4 — Verify Persistent Read and Write Operations — COMPLETE
+Checkpoint 6.4 — Lifecycle Handling & Derived Progress — COMPLETE
 
 ## Repository Status
 - Repository: LFTR
@@ -18,22 +18,36 @@ Checkpoint 5.4 — Verify Persistent Read and Write Operations — COMPLETE
 - Phase 2 complete: technology stack locked; Technical Design Specification formalized.
 - Phase 3 complete: screen map, user journeys, visual design system, and Impeccable review formalized.
 - Phase 4 complete (Checkpoints 4.1 – 4.4): application scaffolding, desktop application shell, UI components, initial deployment baseline, and foundation pushed to GitHub (`06cc6a7`).
-- Phase 5:
-  - **Checkpoint 5.1:** Core Data Model specification formalized in `docs/CORE_DATA_MODEL.md`.
-  - **Checkpoint 5.2:** Core schema migration (`supabase/migrations/20261023150000_core_schema.sql`) covering all 9 core entities, onboarding trigger `on_auth_user_created`, and strict RLS policies.
-  - **Checkpoint 5.3 (Committed & Pushed in `5190755`):** Supabase authentication, session persistence, route protection, and sanctuary login UI.
-  - **Checkpoint 5.4 — COMPLETE (Verify Persistent Read & Write Operations):**
-    - **Data-layer vertical slice:** Implemented typed operations in `src/data/lifeAreas.ts` (`fetchLifeAreas`, `createLifeArea`, `updateLifeArea`, `deleteLifeArea`) querying existing PostgreSQL table `public.life_areas`.
-    - **Reactive context & session isolation:** Created `src/data/lifeAreasContext.tsx` with `LifeAreasProvider` and `useLifeAreas()`. Bound directly to `useAuth()`; completely clears state on sign-out or session transition, preventing any stale cross-session record exposure.
-    - **Frontend integration & UX refinement:**
-      - Enhanced `src/routes/settings.tsx` with Life Areas management (listing, editing name/color/priority, and deletion with system default protection).
-      - Refined Life Area creation UX per user feedback: positioned the compact, accessible `+` action trigger directly beside the "Life Areas" heading in the left sidebar (`src/components/layout/Sidebar.tsx`, `NavGroup.tsx`), powered by the shared `<CreateLifeAreaDialog />` (`src/components/life-areas/CreateLifeAreaDialog.tsx`), and completely removed the creation button/dialog from `src/routes/settings.tsx`.
-      - Sidebar dynamically binds configured life areas with live accent dots and Lucide icons.
-    - **Persistence & Security verified:**
-      - Manual verification: creation, editing, deletion of custom areas, persistence across browser refresh and server restart, and system default protection confirmed working in browser.
-      - Automated security tests: unauthenticated `SELECT` returns 0 rows (RLS enforced), unauthenticated `INSERT` rejected by RLS (code 42501), and unique constraint `uq_life_areas_user_slug_active` enforced.
-    - **Quality suite:** `npm run typecheck` (exit 0), `npm run lint` (exit 0, 0 warnings), `npm run build` (exit 0, 2138 modules).
-- Next Checkpoint: Checkpoint 5.5 — Core Domain Models & Today Workspace Slice.
+- Phase 5 complete:
+  - Core Data Model specification formalized in `docs/CORE_DATA_MODEL.md`.
+  - Core schema migration (`supabase/migrations/20261023150000_core_schema.sql`) covering all 9 core entities, onboarding trigger `on_auth_user_created`, and strict RLS policies.
+  - Supabase authentication, session persistence, route protection, and sanctuary login UI (`5190755`).
+  - Persistent read/write operations verified, vertical slice confirmed (`3544eb9`).
+  - Sidebar creation trigger corrected and verified (`f7a4e9e`).
+- Phase 6:
+  - **Checkpoint 6.1 — COMPLETE (Implement Life-Area Management):**
+    - Preserved 6 system default life areas, custom domain creation, editing, soft-archiving (`archived_at`), and restoration via `ArchivedLifeAreasDialog`.
+    - Completely removed Life Areas management from Settings.
+  - **Checkpoint 6.2 — COMPLETE (Implement Persistent Goals and Milestones):**
+    - Persistent goal and milestone lifecycle, ordering, domain linking, and Goals workspace (`src/routes/goals.tsx`).
+  - **Checkpoint 6.3 — COMPLETE (Task Management + Reusable Calendar Popup):**
+    - **Reusable DatePicker Component:** Built zero-dependency, timezone-safe calendar popup (`src/components/ui/DatePicker.tsx`) supporting visual month navigation, "Today" shortcut, date clearing, and accessible focus management. Integrated into Task deadlines, Goal target dates, and Milestone target dates.
+    - **Canonical Task Management:** Persistent CRUD operations in `src/data/tasks.ts` and `src/data/tasksContext.tsx` via `public.tasks` table with Supabase RLS isolation.
+    - **Three Priority Categories:** Implemented **Must happen** (`high`), **Should happen** (`medium`), and **Could happen** (`low`) with distinct visual icons and badges (`TaskPriorityBadge.tsx`).
+    - **Relational Integrity:** Tasks link to Life Area, optional Goal, and optional Milestone belonging to that Goal. Task completion does not mutate parent goals.
+    - **Today Operational Workspace:** Replaced placeholder in `src/routes/today.tsx` with a full daily matrix partitioned by the 3 priority tiers, search, domain filter pills, summary counters, `TaskItem`, `CreateTaskDialog`, and `EditTaskDialog`.
+  - **Checkpoint 6.4 — COMPLETE (Lifecycle Handling & Derived Progress):**
+    - **Domain Lifecycle Module:** Created `src/domain/lifecycle.ts` with pure, side-effect-free functions: `deriveTaskProgress`, `deriveGoalTaskProgress`, `deriveMilestoneProgress`, `isTaskActive`, `isTaskCompletionContributor`, `isTaskTerminal`, `isGoalActive`, and reopening-state helpers. Cancelled tasks are excluded from progress denominators. No progress is fabricated when data is absent (null returned instead of 0%).
+    - **Lifecycle Business Rules:**
+      - Completed tasks contribute to task-completion progress; reopened tasks return to `todo` (never auto-advanced to `in_progress`).
+      - Milestone progress (explicit user toggle) is kept distinct from task-derived operational progress.
+      - Completing all tasks under a milestone does NOT auto-complete the milestone.
+      - Completing all milestones does NOT auto-achieve the goal. All transitions are explicit user actions.
+      - Cancelled tasks are excluded from denominators; they do not penalise progress.
+    - **GoalCard Integration:** `GoalCard.tsx` now uses `deriveMilestoneProgress` and `deriveGoalTaskProgress` from the lifecycle module, showing both milestone-completion progress (primary bar) and a secondary task-completion indicator when tasks exist.
+    - **Input/Slider CSS Fix:** Added global CSS rules in `src/index.css` to suppress browser-native number input spinners (`-webkit-inner-spin-button`, `-webkit-outer-spin-button`) that appeared white/light on the dark background. Added complete range slider styling (track, thumb, hover, focus-visible, disabled) using existing semantic design tokens (`--color-accent`, `--color-bg-elevated`, `--color-border`).
+    - **Test Suite:** Vitest installed; `src/domain/lifecycle.test.ts` covers 31 focused test cases for all calculation rules, edge cases (no tasks, all cancelled, no milestones), and reopening lifecycle transitions.
+    - **Quality suite:** `npm test` (31 tests, all passed), `npm run typecheck` (exit 0), `npm run lint` (exit 0), `npm run build` (exit 0, 2,154 modules).
 
 
 

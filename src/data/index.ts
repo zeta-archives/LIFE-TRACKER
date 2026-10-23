@@ -13,5 +13,9 @@ export * from './auth'
 export * from './authContext'
 export * from './lifeAreas'
 export * from './lifeAreasContext'
+export * from './goals'
+export * from './goalsContext'
+export * from './tasks'
+export * from './tasksContext'
 
 export const DATA_LAYER_STATUS = 'initialized' as const

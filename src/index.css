@@ -52,4 +52,93 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  /* ── Number input: suppress white browser-native spinners ─────────────────
+     Chrome/Edge render the increment/decrement buttons with light chrome,
+     which clashes with the dark sanctuary foundation. We hide them on all
+     number inputs and rely on the preset buttons in the component UI.    */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield;
+  }
+
+  /* ── Range slider: design-system tokens ───────────────────────────────────
+     If any range input is introduced, it inherits these styles automatically
+     so it matches the dark foundation and amber accent palette.           */
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg-elevated);
+    box-shadow: 0 0 0 0 transparent;
+    transition: box-shadow 150ms ease, background 150ms ease;
+    cursor: pointer;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg-elevated);
+    cursor: pointer;
+    transition: box-shadow 150ms ease, background 150ms ease;
+  }
+
+  input[type='range']::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to right,
+      var(--color-accent) var(--range-progress, 0%),
+      var(--color-border) var(--range-progress, 0%)
+    );
+    border-radius: 9999px;
+    height: 4px;
+  }
+
+  input[type='range']::-moz-range-track {
+    background: var(--color-border);
+    border-radius: 9999px;
+    height: 4px;
+  }
+
+  input[type='range']::-moz-range-progress {
+    background: var(--color-accent);
+    border-radius: 9999px;
+    height: 4px;
+  }
+
+  input[type='range']:hover::-webkit-slider-thumb {
+    background: var(--color-accent-hover);
+    box-shadow: 0 0 0 3px rgba(229, 169, 60, 0.2);
+  }
+
+  input[type='range']:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(229, 169, 60, 0.25);
+  }
+
+  input[type='range']:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }

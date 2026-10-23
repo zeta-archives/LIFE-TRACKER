@@ -28,13 +28,17 @@ import {
   Music,
   Globe,
   Plus,
+  Archive,
+  Pencil,
   type LucideIcon,
 } from 'lucide-react'
 import { NavGroup } from './NavGroup'
 import { NavItem } from './NavItem'
-import { useAuth, useLifeAreas } from '@/data'
+import { useAuth, useLifeAreas, type LifeArea } from '@/data'
 import { Tooltip } from '@/components/ui'
 import { CreateLifeAreaDialog } from '@/components/life-areas/CreateLifeAreaDialog'
+import { EditLifeAreaDialog } from '@/components/life-areas/EditLifeAreaDialog'
+import { ArchivedLifeAreasDialog } from '@/components/life-areas/ArchivedLifeAreasDialog'
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap,
@@ -57,8 +61,10 @@ const iconMap: Record<string, LucideIcon> = {
 
 export function Sidebar() {
   const auth = useAuth()
-  const { lifeAreas, isLoading: lifeAreasLoading } = useLifeAreas()
+  const { lifeAreas, archivedAreas, isLoading: lifeAreasLoading } = useLifeAreas()
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false)
+  const [archivedDialogOpen, setArchivedDialogOpen] = React.useState(false)
+  const [editingArea, setEditingArea] = React.useState<LifeArea | null>(null)
 
   return (
     <>
@@ -99,16 +105,28 @@ export function Sidebar() {
           <NavGroup
             label="Life Areas"
             action={
-              <Tooltip content="Add life area">
-                <button
-                  type="button"
-                  onClick={() => setCreateDialogOpen(true)}
-                  aria-label="Add life area"
-                  className="p-0.5 rounded text-text-muted hover:text-accent hover:bg-white/[0.06] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-                >
-                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
-              </Tooltip>
+              <div className="flex items-center gap-1">
+                <Tooltip content="Archived areas">
+                  <button
+                    type="button"
+                    onClick={() => setArchivedDialogOpen(true)}
+                    aria-label="Archived areas"
+                    className="p-0.5 rounded text-text-muted hover:text-text-primary hover:bg-white/[0.06] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    <Archive className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Add life area">
+                  <button
+                    type="button"
+                    onClick={() => setCreateDialogOpen(true)}
+                    aria-label="Add life area"
+                    className="p-0.5 rounded text-text-muted hover:text-accent hover:bg-white/[0.06] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                </Tooltip>
+              </div>
             }
           >
             {lifeAreasLoading ? (
@@ -119,7 +137,7 @@ export function Sidebar() {
             ) : lifeAreas.length === 0 ? (
               <div className="px-3 py-1.5 flex items-center gap-2 text-[12px] font-sans text-text-muted/50 select-none">
                 <Layers className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-                <span>No areas configured yet</span>
+                <span>No active areas</span>
               </div>
             ) : (
               <div className="flex flex-col gap-0.5">
@@ -128,21 +146,61 @@ export function Sidebar() {
                   return (
                     <div
                       key={area.id}
-                      className="px-3 py-1.5 flex items-center gap-2.5 text-[12.5px] font-sans text-text-secondary hover:text-text-primary hover:bg-white/[0.04] rounded-md transition-colors select-none"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setEditingArea(area)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setEditingArea(area)
+                        }
+                      }}
+                      className="group px-3 py-1.5 flex items-center justify-between text-[12.5px] font-sans text-text-secondary hover:text-text-primary hover:bg-white/[0.04] rounded-md transition-colors select-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                      title={`Configure "${area.name}"`}
                     >
-                      <span
-                        className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm"
-                        style={{ backgroundColor: area.accentColor }}
-                        aria-hidden="true"
-                      />
-                      <IconComponent
-                        className="w-3.5 h-3.5 flex-shrink-0 opacity-70"
-                        aria-hidden="true"
-                      />
-                      <span className="truncate">{area.name}</span>
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <span
+                          className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm"
+                          style={{ backgroundColor: area.accentColor }}
+                          aria-hidden="true"
+                        />
+                        <IconComponent
+                          className="w-3.5 h-3.5 flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">{area.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingArea(area)
+                        }}
+                        aria-label={`Edit ${area.name}`}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-0.5 rounded text-text-muted hover:text-text-primary transition-opacity"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
                     </div>
                   )
                 })}
+
+                {/* Discoverable Archived Areas access when any area is archived */}
+                {archivedAreas.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setArchivedDialogOpen(true)}
+                    className="px-3 py-1.5 mt-0.5 flex items-center justify-between text-[11.5px] font-sans text-text-muted hover:text-text-primary hover:bg-white/[0.04] rounded-md transition-colors w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Archive className="w-3 h-3 opacity-60" />
+                      <span>Archived Areas</span>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/[0.06] text-text-muted font-mono">
+                      {archivedAreas.length}
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </NavGroup>
@@ -192,10 +250,19 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* ── Primary Life Area Creation Dialog ── */}
+      {/* ── Life Area Dialogs ── */}
       <CreateLifeAreaDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+      />
+      <EditLifeAreaDialog
+        area={editingArea}
+        open={Boolean(editingArea)}
+        onOpenChange={(open) => !open && setEditingArea(null)}
+      />
+      <ArchivedLifeAreasDialog
+        open={archivedDialogOpen}
+        onOpenChange={setArchivedDialogOpen}
       />
     </>
   )
