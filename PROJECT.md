@@ -1,4 +1,6 @@
-# Life Tracker — Project Reference
+# Aether — Project Reference
+
+> **Product name:** Aether (formerly Life Tracker — Checkpoint 4.2). GitHub repository and `package.json` retain LFTR/life-tracker identifiers. Do NOT rename the repository without explicit authorization.
 
 ## Goal
 

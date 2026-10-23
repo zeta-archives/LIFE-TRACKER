@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Surface and Background Tiers (Dark Sanctuary) */
+    --color-bg: #0A0B0D;
+    --color-bg-elevated: #121418;
+    --color-bg-overlay: #181B20;
+
+    /* Hairlines and Dividers */
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+
+    /* Text Hierarchy */
+    --color-text-primary: #F4F5F7;
+    --color-text-secondary: #A6ACB8;
+    --color-text-muted: #687080;
+
+    /* Brand Accent (Warm Luminous Amber) */
+    --color-accent: #E5A93C;
+    --color-accent-hover: #F0BA53;
+    --color-accent-subtle: rgba(229, 169, 60, 0.12);
+
+    /* Semantic Status */
+    --color-status-success: #4EAC7A;
+    --color-status-warning: #E59840;
+    --color-status-danger: #D9534F;
+
+    /* Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Accessible focus indicator: 2px amber ring with 2px offset on keyboard focus only */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Tabular numbers rule for metrics, clocks, and data tables */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}

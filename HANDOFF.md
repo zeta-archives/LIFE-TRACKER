@@ -1,27 +1,36 @@
-# Life Tracker — Project Handoff
+# Aether — Project Handoff
+
+> **Product name:** Aether (formerly Life Tracker). The GitHub repository and package.json retain the LFTR/life-tracker identifiers. Do NOT rename the GitHub repository or change the remote URL without explicit authorization.
 
 ## Project
-Life Tracker — intelligent personal life-management system for ambitious college students.
+Aether — intelligent personal life-management system for ambitious college students.
 
 ## Current Phase
-Phase 3 — Screen Map, User Journeys, and Design System — COMPLETE
+Phase 4 — Application Implementation
 
 ## Current Checkpoint
-Checkpoint 3.4 — Impeccable Environment Verification & Design Critique — COMPLETE (Phase 3 Exit)
+Checkpoint 4.4 — Deploy Initial Application Shell & Verified Foundation — COMPLETE (Phase 4 Exit)
 
 ## Repository Status
 - Repository: LFTR
 - Git branch: `main` (tracked to `origin/main` on GitHub: `https://github.com/zeta-archives/LIFE-TRACKER.git`).
 - Phase 1 baseline established (documentation structure, Depth Spell governance).
-- Phase 2 complete: technology stack locked (React 19, Vite, TypeScript, Supabase, Vercel); Technical Design Specification formalized.
-- Phase 3 complete:
-  - Checkpoint 3.1: Screen map, workspace models, and user journeys formalized in `FEATURES.md` and `DESIGN.md`.
-  - Checkpoint 3.2: Design system and visual language investigation completed.
-  - Checkpoint 3.3: Visual design system formalized in `DESIGN.md` Section 6 (personality, color architecture, typography, spacing, shape/surface, components, motion, Soul Orb, Life Orbit, Life Map, accessibility, anti-patterns).
-  - Checkpoint 3.4: Impeccable environment verification and design critique executed; `DESIGN.md` refined with tabular figures, hairline transparency, button radius harmony, and keyboard focus-visible rules.
-- No application code has been written. No npm packages have been installed.
-- No scaffolding has been created (`src/` does not exist).
-- Application implementation has not yet begun.
+- Phase 2 complete: technology stack locked; Technical Design Specification formalized.
+- Phase 3 complete: screen map, user journeys, visual design system, and Impeccable review formalized.
+- Phase 4 complete (Checkpoints 4.1 – 4.4):
+  - **4.1 Scaffolding:** React 19 + Vite 6 + TypeScript (strict mode) + Tailwind CSS with semantic CSS variables, Instrument Serif + Plus Jakarta Sans fonts, TanStack Router baseline, domain and data layer boundaries.
+  - **4.2 Application Shell:** Product renamed to **Aether**; persistent desktop sidebar (`w-60`) strictly following `DESIGN.md §2.1` with Daily, Explore, Life Areas, Goals, Intelligence, and Settings/Profile; 10 workspace routes configured with authentic planned capabilities from `FEATURES.md`.
+  - **4.3 Component Foundation:** Shared accessible UI primitives in `src/components/ui/` (buttons with amber primary, form controls, dialogs with focus trapping, confirmation dialogs, dropdowns, alerts with distinct warning amber, badges, skeletons, empty states, page headers, dividers, tooltips); comprehensive verification showcase at `/verify`.
+  - **4.4 Deployment & Foundation Push:**
+    - `vercel.json` configured with Vite framework and client-side SPA rewrites (`/(.*)` -> `/index.html`) to ensure direct URL navigation and browser refresh work across all workspace routes.
+    - Verified live preview deployment created on Vercel: `https://express-maple-bzaoyci.tmp.now` (claim code available: `5a4d3c29-8cb2-4170-be46-5b79df011435`).
+    - Direct navigation and asset serving verified with HTTP 200 on `/`, `/today`, `/calendar`, `/verify`, plus JS/CSS bundles.
+    - Real browser verification executed via Microsoft Edge on desktop.
+    - Full quality checks verified: `typecheck` (0 errors), `lint` (0 errors, 0 warnings), `build` (2087 modules transformed, 3.37s).
+    - Verified entire application foundation staged and committed cleanly to GitHub `origin/main`.
+- No feature dashboards, databases, or business logic implemented yet.
+
+
 
 ---
 
@@ -59,13 +68,12 @@ Checkpoint 3.4 — Impeccable Environment Verification & Design Critique — COM
 ---
 
 ## Git & Push Status
-
-- **Current Branch:** `master`
-- **Git Security Baseline:** Verified. `.gitignore` actively protects `.env`, `.env.*`, `node_modules/`, `dist/`, `build/`, `coverage/`, and local caches, while allowing `!.env.example`. `.gitattributes` enforces `text=auto eol=lf`.
+ 
+- **Current Branch:** `main`
+- **GitHub Remote:** `origin` -> `https://github.com/zeta-archives/LIFE-TRACKER.git`
+- **Git Security Baseline:** Verified. `.gitignore` actively protects `.env`, `.env.*`, `node_modules/`, `dist/`, `build/`, `.vercel/`, `coverage/`, and local caches, while allowing `!.env.example`. `.gitattributes` enforces `text=auto eol=lf`.
 - **Secret Inspection:** Verified. No secrets, keys, or credentials are present or tracked.
-- **Local Commit:** Checkpoint 2.4 commit created locally.
-- **GitHub Remote:** No remote is currently configured (`git remote -v` returned empty). No GitHub CLI (`gh`) is installed in the environment.
-- **Push Status:** No push was executed because no remote URL exists. The local repository is fully prepared and staged safely. Once a remote is added (`git remote add origin <url>`), it can be pushed immediately with `git push -u origin master`.
+- **Commit & Push Status:** Checkpoint 4.4 commit pushed to `origin/main`.
 
 ---
 
@@ -132,17 +140,14 @@ Formalized in `DESIGN.md` Section 6. Key decisions:
 
 ## Next Roadmap Checkpoint
  
-**Phase 4 / Checkpoint 4.1 — Application Scaffolding**
- 
-Initialize the application with the approved stack and established design system:
-- Initialize Vite + React 19 + TypeScript project
-- Configure Tailwind CSS with the approved design token structure (semantic CSS variables)
-- Install and configure shadcn/ui + Radix UI with Life Tracker visual identity applied
-- Load Instrument Serif + Plus Jakarta Sans via appropriate font loading strategy
-- Establish `src/domain/` and `src/data/` directory structure and boundary enforcement
-- Configure Supabase client connection (no schema yet)
-- Configure `.gitignore` to protect secrets before first `npm install`
-- Confirm TanStack Router or select routing approach
-- Wire up Vitest for domain tests
-- Verify development server runs and a baseline domain test passes
-- **Remember:** No feature implementation until scaffolding and design system baseline are verified in the browser.
+**Checkpoint 4.5 — Today Workspace (Initial Feature Implementation)**
+
+With the application shell navigable and shared component foundation established, proceed to:
+- Implement the Today workspace as the first real feature workspace.
+- Consume the shared UI primitives from `src/components/ui/` (buttons, forms, dialogs, badges, empty states).
+- Establish initial Task and Schedule data models in `src/domain/`.
+- Establish Supabase connection and data access layer setup in `src/data/`.
+- Configure TanStack Query for data fetching/caching; Zustand for transient draft state.
+- No other workspaces should be implemented ahead of Today.
+- **Remember:** No Supabase migrations or schema changes until the Today workspace data model is defined.
+
