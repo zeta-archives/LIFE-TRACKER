@@ -36,6 +36,7 @@ import { NavGroup } from './NavGroup'
 import { NavItem } from './NavItem'
 import { useAuth, useLifeAreas, type LifeArea } from '@/data'
 import { Tooltip } from '@/components/ui'
+import { useQuickLog } from '@/components/quick-log'
 import { CreateLifeAreaDialog } from '@/components/life-areas/CreateLifeAreaDialog'
 import { EditLifeAreaDialog } from '@/components/life-areas/EditLifeAreaDialog'
 import { ArchivedLifeAreasDialog } from '@/components/life-areas/ArchivedLifeAreasDialog'
@@ -61,6 +62,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export function Sidebar() {
   const auth = useAuth()
+  const { openQuickLog } = useQuickLog()
   const { lifeAreas, archivedAreas, isLoading: lifeAreasLoading } = useLifeAreas()
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false)
   const [archivedDialogOpen, setArchivedDialogOpen] = React.useState(false)
@@ -82,6 +84,24 @@ export function Sidebar() {
           <span className="font-serif text-[22px] leading-none text-text-primary tracking-tight select-none">
             Aether
           </span>
+        </div>
+
+        {/* ── Universal Quick Log Trigger (DESIGN.md §1.2 & §3.1) ── */}
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={() => openQuickLog()}
+            className="w-full px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/25 hover:bg-accent/15 hover:border-accent/40 text-accent flex items-center justify-between text-xs font-medium transition-all group shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            title="Universal Quick Log (Press 'Q' anywhere)"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-accent" />
+              <span>Quick Log</span>
+            </div>
+            <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-bg/80 border border-border-subtle text-text-muted group-hover:text-text-secondary">
+              Q
+            </kbd>
+          </button>
         </div>
 
         {/* ── Hairline separator ── */}

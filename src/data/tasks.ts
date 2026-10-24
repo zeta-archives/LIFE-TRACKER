@@ -39,6 +39,7 @@ export interface CreateTaskInput {
   scheduledDate?: string | null
   estimatedDurationMinutes?: number | null
   status?: TaskStatus
+  sourceType?: TaskSourceType
 }
 
 export interface UpdateTaskInput {
@@ -232,7 +233,7 @@ export async function createTask(
       scheduled_date: input.scheduledDate || null,
       estimated_duration_minutes: input.estimatedDurationMinutes || null,
       completed_at: status === 'completed' ? new Date().toISOString() : null,
-      source_type: 'manual',
+      source_type: input.sourceType || 'manual',
     })
     .select()
     .single()

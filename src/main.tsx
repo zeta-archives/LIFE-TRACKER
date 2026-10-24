@@ -9,6 +9,7 @@ import {
   TasksProvider,
   useAuth,
 } from '@/data'
+import { QuickLogProvider } from '@/components/quick-log'
 
 // Load approved fonts locally via Fontsource
 import '@fontsource/instrument-serif/400.css'
@@ -46,7 +47,9 @@ export function App() {
       <LifeAreasProvider>
         <GoalsProvider>
           <TasksProvider>
-            <AppContent />
+            <QuickLogProvider>
+              <AppContent />
+            </QuickLogProvider>
           </TasksProvider>
         </GoalsProvider>
       </LifeAreasProvider>

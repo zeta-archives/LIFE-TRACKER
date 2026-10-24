@@ -141,4 +141,78 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+
+  /* ── Custom Scrollbars (Dark Sanctuary Foundation + Restrained Amber Thumb) ── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(229, 169, 60, 0.35) var(--color-bg-elevated);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-elevated);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(229, 169, 60, 0.35);
+    border-radius: 9999px;
+    border: 1px solid var(--color-bg);
+    transition: background 150ms ease, box-shadow 150ms ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--color-accent-hover);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* ── Domain Filter Horizontal Scrollbar Slider ────────────────────────── */
+  .domain-filter-slider,
+  [data-domain-slider] {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) var(--color-bg-elevated);
+  }
+
+  .domain-filter-slider::-webkit-scrollbar,
+  [data-domain-slider]::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .domain-filter-slider::-webkit-scrollbar-track,
+  [data-domain-slider]::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 9999px;
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  .domain-filter-slider::-webkit-scrollbar-thumb,
+  [data-domain-slider]::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: 9999px;
+    box-shadow: 0 0 6px rgba(229, 169, 60, 0.25);
+    transition: background 150ms ease, box-shadow 150ms ease;
+  }
+
+  .domain-filter-slider::-webkit-scrollbar-thumb:hover,
+  [data-domain-slider]::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-hover);
+    box-shadow: 0 0 8px rgba(229, 169, 60, 0.45);
+  }
+
+  .domain-filter-slider::-webkit-scrollbar-thumb:active,
+  [data-domain-slider]::-webkit-scrollbar-thumb:active {
+    background: #f5c46b;
+  }
 }
+

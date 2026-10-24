@@ -233,7 +233,7 @@ export function GoalsPage() {
         </div>
 
         {/* Life Area Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 domain-filter-slider" data-domain-slider="true">
           <span className="text-[11px] text-text-muted mr-1 flex items-center gap-1">
             <Filter className="w-3 h-3" />
             <span>Domain:</span>

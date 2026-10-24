@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 import { Sidebar } from './Sidebar'
+import { QuickLogDialog } from '@/components/quick-log'
 
 export function AppShell() {
   return (
@@ -15,6 +16,9 @@ export function AppShell() {
       >
         <Outlet />
       </main>
+
+      {/* ── Universal Quick Log Overlay ── */}
+      <QuickLogDialog />
     </div>
   )
 }
